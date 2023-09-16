@@ -62,17 +62,28 @@ HEIGHT = 800
 
 # TODO: por enquanto o grid nao esta centralizado em tela
 
+GAME_FPS = 60
+
 GRID_Y = HEIGHT - 200
 GRID_X = 0 + 100
 GRID_GAP = 10
 
 CARD_COUNT = 20
+CARD_COUNT_WITHOUT_DIPLICATES = int(CARD_COUNT / 2)
 
 COLUMN_COUNT = 5
 ROW_COUNT = int(CARD_COUNT / COLUMN_COUNT)
 
 CARD_WIDTH = 75
 CARD_HEIGHT = 130
+
+CARDS = []
+for ascii_code in range(65, CARD_COUNT_WITHOUT_DIPLICATES + 65):
+    # append 2 times
+    CARDS.append(chr(ascii_code))
+    CARDS.append(chr(ascii_code))
+
+random.shuffle(CARDS)
 
 # class PlayingCard:
 #     """Creates and organizes the playing cards
@@ -143,13 +154,23 @@ class MyGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
 
-        self.selected_card_coords = (-1, -1)
+        self.selected_card = { 'card': '', 'cords': (-1,-1) }
+        self.grid = []
+
+        # inicializando grid em forma de matriz
+        for r in range(0, ROW_COUNT):
+            self.grid.append([])
+            for c in range(0, COLUMN_COUNT):
+                self.grid[r].append(0)
 
         arcade.set_background_color(arcade.color.WHEAT)
 
     def setup(self):
-        pass
-        # PlayingCard.make_cards()
+        card_counter = 0
+        for row in range(0, ROW_COUNT):
+            for col in range(0, COLUMN_COUNT):
+                self.grid[row][col] = CARDS[card_counter]
+                card_counter += 1
 
     def on_draw(self):
         arcade.start_render()
@@ -159,40 +180,16 @@ class MyGame(arcade.Window):
 
             for col in range(0, COLUMN_COUNT):
                 x = GRID_X + (col * CARD_WIDTH) + (GRID_GAP * col)
-                color = arcade.color.ORANGE
 
-                if ((row,col) == self.selected_card_coords):
+                color = arcade.color.ORANGE
+                card = self.grid[row][col]
+
+                if (card == self.selected_card['card']):
                     color = arcade.color.BLUE
 
                 arcade.draw_rectangle_filled(x, y, CARD_WIDTH, CARD_HEIGHT, color)
 
-        # DEBUG -------------------------------------------------------------------------------
-        # arcade o X e Y do rectangle do arcade sao no centro, nao no canto superior esquerdo
-        grid_x_start = GRID_X - (CARD_WIDTH / 2)
-        grid_y_start = GRID_Y + (CARD_HEIGHT / 2)
-
-        grid_x_end = grid_x_start + COLUMN_COUNT * CARD_WIDTH + GRID_GAP * (COLUMN_COUNT - 1)
-        grid_y_end = grid_y_start - CARD_HEIGHT * ROW_COUNT - GRID_GAP * (ROW_COUNT - 1)
-
-        arcade.draw_rectangle_filled(grid_x_start, grid_y_start, 15, 15, arcade.color.GREEN)
-        arcade.draw_rectangle_filled(grid_x_end, grid_y_end, 15, 15, arcade.color.GREEN)
-
-        for row in range(0, ROW_COUNT):
-            card_y_start = GRID_Y - (row * CARD_HEIGHT) - (GRID_GAP * row)
-            card_y_start += CARD_HEIGHT / 2 # offset para deixar o Y no canto superior do card
-
-            card_y_end = card_y_start - CARD_HEIGHT
-
-            for col in range(0, COLUMN_COUNT):
-                card_x_start = GRID_X + (col * CARD_WIDTH) + (GRID_GAP * col)
-                card_x_start -= CARD_WIDTH / 2 # offset para deixar o X no canto esquerdo
-                
-                card_x_end = card_x_start + CARD_WIDTH
-                
-                arcade.draw_rectangle_filled(card_x_start, card_y_start, 8, 8, arcade.color.MAGENTA)
-                arcade.draw_rectangle_filled(card_x_end, card_y_end, 8, 8, arcade.color.MAGENTA)
-
-        # DEBUG ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                arcade.draw_text(card, x - 3, y)
 
         # global start_game, in_game, you_win
         # global card_height, card_height, card_names
@@ -395,7 +392,7 @@ class MyGame(arcade.Window):
         mouse_click_inside_grid = mouse_x >= grid_x_start and mouse_x <= grid_x_end and mouse_y <= grid_y_start and mouse_y >= grid_y_end
 
         if not mouse_click_inside_grid:
-            self.selected_card_coords = (-1,-1)
+            self.selected_card = {'card': '', 'coords': (-1,-1)}
             return
 
         for row in range(0, ROW_COUNT):
@@ -412,7 +409,8 @@ class MyGame(arcade.Window):
                 
                 click_inside_card = mouse_x >= card_x_start and mouse_x <= card_x_end and mouse_y <= card_y_start and mouse_y >= card_y_end
                 if click_inside_card:
-                    self.selected_card_coords = (row, col)
+                    card = self.grid[row][col]
+                    self.selected_card = {'card': card, 'coords': (row,col)}
 
         
         
@@ -680,7 +678,7 @@ def card_collision(card) -> bool:
 #         arcade.draw_texture_rectangle(card.x, card.y, card_width, card_height, card_imgs["images/blue_back.png"])
 
 def main():
-    game = MyGame(WIDTH, HEIGHT, "Solitaire BUT ROBBED")
+    game = MyGame(WIDTH, HEIGHT, "Jogo da memória 🐘")
     game.setup()
     arcade.run()
 
