@@ -1,0 +1,1 @@
+Esse projeto é um hack em cima do código desse outro repo: https://github.com/Iliaromanov/Solitaire
