@@ -154,7 +154,8 @@ class MyGame(arcade.Window):
     def __init__(self, width, height, title):
         super().__init__(width, height, title)
 
-        self.selected_card = { 'card': '', 'cords': (-1,-1) }
+        self.selected_card_1 = None # { 'card': '', 'coords': (-1,-1) }
+        self.selected_card_2 = None # { 'card': '', 'coords': (-1,-1) }
         self.grid = []
 
         # inicializando grid em forma de matriz
@@ -184,8 +185,11 @@ class MyGame(arcade.Window):
                 color = arcade.color.ORANGE
                 card = self.grid[row][col]
 
-                if (card == self.selected_card['card']):
+                if self.selected_card_1 and (row,col) == self.selected_card_1['coords']:
                     color = arcade.color.BLUE
+
+                if self.selected_card_2 and (row,col) == self.selected_card_2['coords']:
+                    color = arcade.color.RED
 
                 arcade.draw_rectangle_filled(x, y, CARD_WIDTH, CARD_HEIGHT, color)
 
@@ -392,7 +396,8 @@ class MyGame(arcade.Window):
         mouse_click_inside_grid = mouse_x >= grid_x_start and mouse_x <= grid_x_end and mouse_y <= grid_y_start and mouse_y >= grid_y_end
 
         if not mouse_click_inside_grid:
-            self.selected_card = {'card': '', 'coords': (-1,-1)}
+            self.selected_card_1 = None
+            self.selected_card_2 = None
             return
 
         for row in range(0, ROW_COUNT):
@@ -408,12 +413,19 @@ class MyGame(arcade.Window):
                 card_x_end = card_x_start + CARD_WIDTH
                 
                 click_inside_card = mouse_x >= card_x_start and mouse_x <= card_x_end and mouse_y <= card_y_start and mouse_y >= card_y_end
-                if click_inside_card:
-                    card = self.grid[row][col]
-                    self.selected_card = {'card': card, 'coords': (row,col)}
+                if not click_inside_card:
+                    continue
+                    
+                card = self.grid[row][col]
 
-        
-        
+                if self.selected_card_1 == None:
+                    self.selected_card_1 = {'card': card, 'coords': (row,col)}
+                elif self.selected_card_1['card'] == card: # segundo clique foi numa carta de mesmo valor da carta inicial
+                    self.selected_card_2 = {'card': card, 'coords': (row,col)}
+                else: # segundo clique foi numa carta de valor diferente da carta inicial
+                    self.selected_card_1 = None
+                    self.selected_card_2 = None
+
         # """
         # Called when the user presses a mouse button.
         # """
